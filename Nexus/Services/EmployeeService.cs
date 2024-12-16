@@ -36,5 +36,44 @@ namespace Nexus.Services
             return _context.Employees
                 .FirstOrDefault(e => e.Username == username && e.Password == password);
         }
+        public IEnumerable<Employee> GetAllEmployees()
+        {
+            // Sử dụng EF Core để lấy danh sách tất cả nhân viên
+            return _context.Employees.ToList();
+        }
+        public void AddEmployee(Employee employee)
+        {
+            // Sử dụng EF Core để thêm một nhân viên mới
+            _context.Employees.Add(employee);
+            _context.SaveChanges(); // Lưu thay đổi vào database
+            employee.Password = null;
+        }
+        public void UpdateEmployee(Employee updatedEmployee)
+        {
+            var existingEmployee = _context.Employees.FirstOrDefault(e => e.EmployeeId == updatedEmployee.EmployeeId);
+            if (existingEmployee != null)
+            {
+                // Cập nhật các thuộc tính
+                existingEmployee.Name = updatedEmployee.Name;
+                existingEmployee.EmployeeType = updatedEmployee.EmployeeType;
+                existingEmployee.UpdatedBy = updatedEmployee.UpdatedBy;
+                existingEmployee.UpdatedTime = updatedEmployee.UpdatedTime;
+
+                // Lưu thay đổi vào database
+                _context.SaveChanges();
+            }
+            updatedEmployee.Password = null;
+        }
+        public void DeleteEmployee(int employeeId)
+        {
+            var employee = _context.Employees.FirstOrDefault(e => e.EmployeeId == employeeId);
+            if (employee != null)
+            {
+                // Xóa nhân viên khỏi DbSet
+                _context.Employees.Remove(employee);
+                _context.SaveChanges(); // Lưu thay đổi vào database
+            }
+        }
+
     }
 }
