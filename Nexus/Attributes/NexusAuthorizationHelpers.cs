@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using Nexus.Models;
 using Nexus.Models.Enums;
 using System.IdentityModel.Tokens.Jwt;
@@ -18,8 +19,7 @@ namespace EIM.Attributes.FilterPipelines.Authorizations
         {
             var claims = new List<Claim>
         {
-            new Claim("EmployeeId", user.UserId.ToString()),
-            new Claim("EmployeeType", ((int)user.RoleId).ToString()),
+            new Claim("User", JsonConvert.SerializeObject(user)),
             new Claim(JwtRegisteredClaimNames.Exp, new DateTimeOffset(expiredTime).ToUnixTimeSeconds().ToString())
         };
 
@@ -61,11 +61,10 @@ namespace EIM.Attributes.FilterPipelines.Authorizations
                 if (validatedToken is JwtSecurityToken jwtToken)
                 {
                     // Optional: Perform additional checks on claims (if needed)
-                    var employeeIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "EmployeeId");
-                    var employeeTypeClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "EmployeeType");
+                    var userClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "User");
 
                     // Validate essential claims
-                    if (employeeIdClaim == null || employeeTypeClaim == null)
+                    if (userClaim == null)
                     {
                         return null;
                     }

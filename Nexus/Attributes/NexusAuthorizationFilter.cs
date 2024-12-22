@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Newtonsoft.Json;
+using Nexus.Models;
 using Nexus.Models.Enums;
 using System.IdentityModel.Tokens.Jwt;
 
@@ -36,14 +38,14 @@ public class NexusAuthorizationFilter : IAuthorizationFilter
             }
 
             // Lấy EmployeeType từ claim
-            var employeeTypeClaim = principal.Claims.FirstOrDefault(c => c.Type == "EmployeeType");
-            if (employeeTypeClaim == null)
+            var user = JsonConvert.DeserializeObject<User>(principal.Claims.FirstOrDefault(c => c.Type == "User").Value);
+            if (user == null)
             {
                 context.Result = new UnauthorizedResult();
                 return;
             }
 
-            Role? employeeType = employeeTypeClaim.Value != null ? (Role)short.Parse(employeeTypeClaim.Value) : null;
+            Role? employeeType = user.RoleId;
 
             // Kiểm tra quyền truy cập theo EmployeeType
             var requiredEmployeeType = context.ActionDescriptor.EndpointMetadata
