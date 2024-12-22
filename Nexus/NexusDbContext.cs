@@ -17,53 +17,17 @@ namespace Nexus
             optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
         }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            // Employee Entity
-            modelBuilder.Entity<Employee>(entity =>
-            {
-                entity.HasKey(e => e.EmployeeId);
-                entity.Property(e => e.Username).IsRequired().HasMaxLength(100);
-                entity.Property(e => e.Password).IsRequired().HasMaxLength(64);
-                entity.HasIndex(e => e.Username).IsUnique();
-                entity.HasOne<AdminEmployee>()
-                    .WithOne()
-                    .HasForeignKey<Employee>(e => e.UpdatedBy)
-                    .IsRequired(false);
-            });
-
-            // RentalShopEmployee Entity
-            modelBuilder.Entity<RentalShopEmployee>(entity =>
-            {
-                entity.HasKey(r => r.RentalShopEmployeeId);
-            });
-
-            // AdminEmployee Entity
-            modelBuilder.Entity<AdminEmployee>(entity =>
-            {
-                entity.HasKey(a => a.AdminEmployeeId);
-                entity.HasOne<Employee>()
-                    .WithOne()
-                    .HasForeignKey<AdminEmployee>(a => a.AdminEmployeeId);
-            });
-
-            // TechnicalEmployee Entity
-            modelBuilder.Entity<TechnicalEmployee>(entity =>
-            {
-                entity.HasKey(t => t.TechnicalEmployeeId);
-                entity.HasOne<Employee>()
-                    .WithOne()
-                    .HasForeignKey<TechnicalEmployee>(t => t.TechnicalEmployeeId);
-            });
-        }
-
+        public DbSet<User> Users { get; set; }
+        public DbSet<Store> Stores { get; set; }
         public DbSet<Employee> Employees { get; set; }
-        public DbSet<RentalShopEmployee> RentalShopEmployees { get; set; }
-        public DbSet<AdminEmployee> AdminEmployees { get; set; }
-        public DbSet<TechnicalEmployee> TechnicalEmployees { get; set; }
-        public DbSet<RentalShop> RentalShops { get; set; }
-        public DbSet<City> Cities { get; set; }
+        public DbSet<Supplier> Suppliers { get; set; }
+        public DbSet<Device> Devices { get; set; }
+        public DbSet<Package> Packages { get; set; }
+        public DbSet<Customer> Customers { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderDetail> OrderDetails { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+        public DbSet<Connection> Connections { get; set; }
+        public DbSet<ApplyDevice> ApplyDevices { get; set; }
     }
 }

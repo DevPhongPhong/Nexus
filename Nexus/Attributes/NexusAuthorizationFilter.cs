@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Nexus.Models.Enums;
-using Nexus.Services;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 
 namespace EIM.Attributes.FilterPipelines.Authorizations;
 
@@ -45,11 +43,11 @@ public class NexusAuthorizationFilter : IAuthorizationFilter
                 return;
             }
 
-            EmployeeType? employeeType = employeeTypeClaim.Value != null ? (EmployeeType)short.Parse(employeeTypeClaim.Value) : null;
+            Role? employeeType = employeeTypeClaim.Value != null ? (Role)short.Parse(employeeTypeClaim.Value) : null;
 
             // Kiểm tra quyền truy cập theo EmployeeType
             var requiredEmployeeType = context.ActionDescriptor.EndpointMetadata
-                .OfType<EmployeeTypeAccessAttribute>()
+                .OfType<RoleAccessAttribute>()
                 .FirstOrDefault()?.AllowedEmployeeTypes;
             if (requiredEmployeeType != null && !requiredEmployeeType.Any(type => type == employeeType))
             {

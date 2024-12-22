@@ -9,6 +9,6 @@ namespace Nexus.Controllers
     [ServiceFilter(typeof(NexusAuthorizationFilter))]
     public class BaseController : ControllerBase
     {
-        public EmployeeType EmployeeType { get; set; }
+        public Role EmployeeType { get; set; }
     }
 }

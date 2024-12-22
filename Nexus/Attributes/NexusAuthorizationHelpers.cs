@@ -14,12 +14,12 @@ namespace EIM.Attributes.FilterPipelines.Authorizations
         /// <summary>
         /// Generate token for an employee.
         /// </summary>
-        public static string GenerateToken(Employee employee, string secretKey, string? issuer, string? audience, DateTime expiredTime)
+        public static string GenerateToken(User user, string secretKey, DateTime expiredTime)
         {
             var claims = new List<Claim>
         {
-            new Claim("EmployeeId", employee.EmployeeId.ToString()),
-            new Claim("EmployeeType", ((short)employee.EmployeeType).ToString()),
+            new Claim("EmployeeId", user.UserId.ToString()),
+            new Claim("EmployeeType", ((int)user.RoleId).ToString()),
             new Claim(JwtRegisteredClaimNames.Exp, new DateTimeOffset(expiredTime).ToUnixTimeSeconds().ToString())
         };
 
@@ -27,8 +27,6 @@ namespace EIM.Attributes.FilterPipelines.Authorizations
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: issuer,
-                audience: audience,
                 claims: claims,
                 expires: expiredTime,
                 signingCredentials: creds

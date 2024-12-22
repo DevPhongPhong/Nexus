@@ -1,7 +1,6 @@
 ﻿using EIM.Attributes.FilterPipelines.Authorizations;
 using Microsoft.EntityFrameworkCore;
 using Nexus;
-using Nexus.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var locationDbConnectionString = builder.Configuration.GetConnectionString("Nexus");
@@ -12,9 +11,36 @@ builder.Services.AddDbContext<NexusDbContext>(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-builder.Services.AddScoped<IRentalShopService, RentalShopService>();
+builder.Services.AddSwaggerGen(options =>
+{
+    // Định nghĩa bảo mật JWT
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Enter 'Bearer' [space] and then your token in the text input below.\n\nExample: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\""
+    });
+
+    // Yêu cầu bảo mật JWT cho tất cả các endpoint
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+
 builder.Services.AddScoped<NexusAuthorizationFilter>();
 
 var app = builder.Build();

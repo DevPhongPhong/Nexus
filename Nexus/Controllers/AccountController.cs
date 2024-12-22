@@ -1,8 +1,9 @@
 ﻿using EIM.Attributes.FilterPipelines.Authorizations;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Nexus.Services;
+using Nexus.Models;
+using System;
+using System.Data.Entity;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -12,43 +13,34 @@ namespace Nexus.Controllers
     [ApiController]
     public class AccountController : BaseController
     {
-        private readonly IEmployeeService _employeeService;
         private readonly IConfiguration _configuration;
+        private readonly NexusDbContext _context;
 
-
-        public AccountController(IEmployeeService employeeService, IConfiguration configuration)
+        public AccountController(IConfiguration configuration, NexusDbContext context)
         {
-            _employeeService = employeeService;
             _configuration = configuration;
+            _context = context;
         }
 
         [HttpPost("Login")]
         [AllowAnonymous]
         public IActionResult Login([FromBody] LoginRequest loginDTO)
         {
-            loginDTO.Password = ToSHA256HashString(loginDTO.Password);
-            var loginResponse = _employeeService.ValidateEmployee(loginDTO.Username, loginDTO.Password);
+            loginDTO.Password = Common.ToSHA256HashString(loginDTO.Password);
+
+            // Retrieve user from the database
+            var loginResponse = _context.Users.AsNoTracking()
+                .FirstOrDefault(u => u.Username == loginDTO.Username && u.PasswordHash == loginDTO.Password);
+
             if (loginResponse == null)
             {
-                return new UnauthorizedResult();
+                return Unauthorized();
             }
+
+            
             string secretKey = _configuration["JWT:SecretKey"];
             DateTime expTime = DateTime.Now.AddHours(int.Parse(_configuration["JWT:LifeTimeHour"].ToString()));
-            return new OkObjectResult(NexusAuthorizationHelpers.GenerateToken(loginResponse, secretKey, "Nexus", "Nexus_WebUI", expTime));
-        }
-
-        public static string ToSHA256HashString(string input)
-        {
-            using var sha256 = SHA256.Create();
-            var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(input));
-
-            var builder = new StringBuilder();
-            for (var i = 0; i < bytes.Length; i++)
-            {
-                builder.Append(bytes[i].ToString("x2"));
-            }
-
-            return builder.ToString();
+            return new OkObjectResult(NexusAuthorizationHelpers.GenerateToken(loginResponse, secretKey, expTime));
         }
     }
 }
