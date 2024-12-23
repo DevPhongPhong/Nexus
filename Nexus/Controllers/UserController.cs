@@ -5,6 +5,7 @@ using Nexus.Models;
 using System;
 using System.Data.Entity;
 using EIM.Attributes.FilterPipelines.Authorizations;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Nexus.Controllers
 {
