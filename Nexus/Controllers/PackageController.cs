@@ -43,8 +43,16 @@ namespace Nexus.Controllers
         [HttpPost]
         public IActionResult CreatePackage([FromBody] Package package)
         {
+            package.CreatedAt = DateTime.Now;
             _context.Packages.Add(package);
-            _context.SaveChanges();
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+
+            }
             return CreatedAtAction(nameof(GetPackageById), new { id = package.PackageId }, package);
         }
 
@@ -61,7 +69,16 @@ namespace Nexus.Controllers
             package.PackageName = updatedPackage.PackageName;
             package.Description = updatedPackage.Description;
             package.Price = updatedPackage.Price;
-            _context.SaveChanges();
+            package.UpdatedAt = DateTime.Now;
+
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+
+            }
 
             return NoContent();
         }
@@ -77,7 +94,14 @@ namespace Nexus.Controllers
             }
 
             _context.Packages.Remove(package);
-            _context.SaveChanges();
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+
+            }
 
             return NoContent();
         }

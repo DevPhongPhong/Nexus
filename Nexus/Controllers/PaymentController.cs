@@ -43,14 +43,22 @@ namespace Nexus.Controllers
         [HttpPost]
         public IActionResult CreatePayment([FromBody] Payment payment)
         {
-            var order = _context.Orders.Find(payment.OrderId);
+            payment.CreatedAt = DateTime.Now;
+            var order = _context.Customers.Find(payment.CustomerId);
             if (order == null)
             {
-                return BadRequest("Order does not exist.");
+                return BadRequest("Customer does not exist.");
             }
 
             _context.Payments.Add(payment);
-            _context.SaveChanges();
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+
+            }
 
             return CreatedAtAction(nameof(GetPaymentById), new { id = payment.PaymentId }, payment);
         }
@@ -59,18 +67,25 @@ namespace Nexus.Controllers
         [HttpPut("{id}")]
         public IActionResult UpdatePayment(int id, [FromBody] Payment updatedPayment)
         {
+            updatedPayment.UpdatedAt = DateTime.Now;
+
             var payment = _context.Payments.Find(id);
             if (payment == null)
             {
                 return NotFound();
             }
 
-            payment.OrderId = updatedPayment.OrderId;
-            payment.PaymentDate = updatedPayment.PaymentDate;
+            payment.CustomerId = updatedPayment.CustomerId;
             payment.Amount = updatedPayment.Amount;
-            payment.PaymentMethod = updatedPayment.PaymentMethod;
-            payment.Status = updatedPayment.Status;
-            _context.SaveChanges();
+            payment.UpdatedAt = DateTime.Now;
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+
+            }
 
             return NoContent();
         }
@@ -86,7 +101,14 @@ namespace Nexus.Controllers
             }
 
             _context.Payments.Remove(payment);
-            _context.SaveChanges();
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+
+            }
 
             return NoContent();
         }

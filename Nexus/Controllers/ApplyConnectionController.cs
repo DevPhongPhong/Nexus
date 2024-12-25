@@ -33,44 +33,16 @@ namespace Nexus.Controllers
             }
 
             _context.ApplyDevices.Add(applyDevice);
-            _context.SaveChanges();
-
-            return CreatedAtAction(nameof(GetApplyConnection), new { deviceId = applyDevice.DeviceId, connectionId = applyDevice.ConnectionId }, applyDevice);
-        }
-
-        // Get a specific ApplyConnection
-        [HttpGet("{deviceId}/{connectionId}")]
-        public IActionResult GetApplyConnection(int deviceId, int connectionId)
-        {
-            var applyDevice = _context.ApplyDevices
-                .FirstOrDefault(ad => ad.DeviceId == deviceId && ad.ConnectionId == connectionId);
-
-            if (applyDevice == null)
+            try
             {
-                return NotFound();
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+
             }
 
             return Ok(applyDevice);
-        }
-
-        // Update an ApplyConnection
-        [HttpPut("{deviceId}/{connectionId}")]
-        public IActionResult UpdateApplyConnection(int deviceId, int connectionId, [FromBody] ApplyDevice updatedApplyDevice)
-        {
-            var applyDevice = _context.ApplyDevices
-                .FirstOrDefault(ad => ad.DeviceId == deviceId && ad.ConnectionId == connectionId);
-
-            if (applyDevice == null)
-            {
-                return NotFound();
-            }
-
-            applyDevice.ConnectionId = updatedApplyDevice.ConnectionId;
-            applyDevice.DeviceId = updatedApplyDevice.DeviceId;
-
-            _context.SaveChanges();
-
-            return NoContent();
         }
 
         // Delete an ApplyConnection
@@ -86,7 +58,14 @@ namespace Nexus.Controllers
             }
 
             _context.ApplyDevices.Remove(applyDevice);
-            _context.SaveChanges();
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+
+            }
 
             return NoContent();
         }

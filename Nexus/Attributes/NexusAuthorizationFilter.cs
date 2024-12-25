@@ -47,17 +47,24 @@ public class NexusAuthorizationFilter : IAuthorizationFilter
 
             Role? employeeType = user.RoleId;
 
+            bool isOk = false;
             // Kiểm tra quyền truy cập theo EmployeeType
             var requiredEmployeeType = context.ActionDescriptor.EndpointMetadata
-                .OfType<RoleAccessAttribute>()
-                .FirstOrDefault()?.AllowedEmployeeTypes;
-            if (requiredEmployeeType != null && !requiredEmployeeType.Any(type => type == employeeType))
+                .OfType<RoleAccessAttribute>().Select(x => x.AllowedEmployeeTypes);
+
+            foreach (var item in requiredEmployeeType)
             {
-                context.Result = new ForbidResult();
-                return;
+                if (item != null && item.Any(type => type == employeeType))
+                {
+                    isOk = true;
+                    break;
+                }
             }
 
-            context.HttpContext.User = principal;
+            if (isOk)
+                context.HttpContext.User = principal;
+            else
+                context.Result = new ForbidResult("Không có quyền truy cập");
         }
         catch (Exception)
         {

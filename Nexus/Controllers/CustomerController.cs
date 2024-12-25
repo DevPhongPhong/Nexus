@@ -41,7 +41,15 @@ namespace Nexus.Controllers
         public IActionResult CreateCustomer([FromBody] Customer customer)
         {
             _context.Customers.Add(customer);
-            _context.SaveChanges();
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException.Message.Contains("email")) return BadRequest("Email is existed");
+                if (ex.InnerException.Message.Contains("phonenum")) return BadRequest("Phonenum is existed");
+            }
             return CreatedAtAction(nameof(GetCustomerById), new { id = customer.CustomerId }, customer);
         }
 
@@ -59,7 +67,16 @@ namespace Nexus.Controllers
             customer.Email = updatedCustomer.Email;
             customer.PhoneNumber = updatedCustomer.PhoneNumber;
             customer.Address = updatedCustomer.Address;
-            _context.SaveChanges();
+            customer.UpdatedAt = DateTime.Now;
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException.Message.Contains("email")) return BadRequest("Email is existed");
+                if (ex.InnerException.Message.Contains("phonenum")) return BadRequest("Phonenum is existed");
+            }
 
             return NoContent();
         }
@@ -75,7 +92,14 @@ namespace Nexus.Controllers
             }
 
             _context.Customers.Remove(customer);
-            _context.SaveChanges();
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+
+            }
 
             return NoContent();
         }

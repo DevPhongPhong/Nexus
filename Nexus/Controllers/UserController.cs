@@ -45,6 +45,7 @@ namespace Nexus.Controllers
         [HttpPost]
         public IActionResult CreateUser([FromBody] User user)
         {
+            user.CreatedAt = DateTime.Now;
             if (_context.Users.Any(u => u.Username == user.Username))
             {
                 return BadRequest("Username already exists.");
@@ -52,7 +53,14 @@ namespace Nexus.Controllers
 
             user.PasswordHash = Common.ToSHA256HashString(user.PasswordHash);
             _context.Users.Add(user);
-            _context.SaveChanges();
+            try
+            {
+_context.SaveChanges();
+}
+            catch(Exception ex)
+            {
+               
+            }
 
             return CreatedAtAction(nameof(GetUserById), new { id = user.UserId }, user);
         }
@@ -71,7 +79,15 @@ namespace Nexus.Controllers
             user.Email = updatedUser.Email;
             user.PhoneNumber = updatedUser.PhoneNumber;
             user.RoleId = updatedUser.RoleId;
-            _context.SaveChanges();
+            user.UpdatedAt = DateTime.Now;
+            try
+            {
+_context.SaveChanges();
+}
+            catch(Exception ex)
+            {
+               
+            }
 
             return NoContent();
         }
@@ -87,7 +103,14 @@ namespace Nexus.Controllers
             }
 
             _context.Users.Remove(user);
-            _context.SaveChanges();
+            try
+            {
+_context.SaveChanges();
+}
+            catch(Exception ex)
+            {
+               
+            }
 
             return NoContent();
         }
@@ -113,7 +136,14 @@ namespace Nexus.Controllers
                 employee.StoreId = storeId;
             }
 
-            _context.SaveChanges();
+            try
+            {
+_context.SaveChanges();
+}
+            catch(Exception ex)
+            {
+               
+            }
             return Ok(employee);
         }
     }

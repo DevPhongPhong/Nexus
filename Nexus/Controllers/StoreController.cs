@@ -43,8 +43,16 @@ namespace Nexus.Controllers
         [HttpPost]
         public IActionResult CreateStore([FromBody] Store store)
         {
+            store.CreatedAt = DateTime.Now;
             _context.Stores.Add(store);
-            _context.SaveChanges();
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+
+            }
             return CreatedAtAction(nameof(GetStoreById), new { id = store.StoreId }, store);
         }
 
@@ -61,7 +69,15 @@ namespace Nexus.Controllers
             store.StoreName = updatedStore.StoreName;
             store.Address = updatedStore.Address;
             store.PhoneNumber = updatedStore.PhoneNumber;
-            _context.SaveChanges();
+            store.UpdatedAt = DateTime.Now;
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+
+            }
 
             return NoContent();
         }
@@ -77,7 +93,14 @@ namespace Nexus.Controllers
             }
 
             _context.Stores.Remove(store);
-            _context.SaveChanges();
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+
+            }
 
             return NoContent();
         }

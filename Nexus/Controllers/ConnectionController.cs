@@ -28,24 +28,55 @@ namespace Nexus.Controllers
             return Ok(connections);
         }
 
-        // Get connection by ID
         [HttpGet("{id}")]
         public IActionResult GetConnectionById(int id)
         {
-            var connection = _context.Connections.Include(c => c.Customer).FirstOrDefault(c => c.ConnectionId == id);
+            // Fetch the connection by ID
+            var connection = _context.Connections.FirstOrDefault(c => c.ConnectionId == id);
             if (connection == null)
             {
                 return NotFound();
             }
-            return Ok(connection);
+
+            // Manually load related Customer
+            var customer = _context.Customers.FirstOrDefault(c => c.CustomerId == connection.CustomerId);
+
+            // Manually load related ApplyDevices
+            var applyDevices = _context.ApplyDevices
+                .Where(ad => ad.ConnectionId == connection.ConnectionId)
+                .ToList();
+
+            // Manually load Devices for each ApplyDevice
+            foreach (var applyDevice in applyDevices)
+            {
+                applyDevice.Device = _context.Devices.FirstOrDefault(d => d.DeviceId == applyDevice.DeviceId);
+            }
+
+            // Construct the result with related data
+            var result = new
+            {
+                Connection = connection,
+                Customer = customer,
+                ApplyDevices = applyDevices
+            };
+
+            return Ok(result);
         }
 
         // Create a new connection
         [HttpPost]
         public IActionResult CreateConnection([FromBody] Connection connection)
         {
+            connection.CreatedAt = DateTime.Now;
             _context.Connections.Add(connection);
-            _context.SaveChanges();
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException.Message.Contains("customer_id")) return BadRequest("Invalid CustomerId");
+            }
             return CreatedAtAction(nameof(GetConnectionById), new { id = connection.ConnectionId }, connection);
         }
 
@@ -61,7 +92,14 @@ namespace Nexus.Controllers
 
             connection.ConnectionName = updatedConnection.ConnectionName;
             connection.CustomerId = updatedConnection.CustomerId;
-            _context.SaveChanges();
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+
+            }
 
             return NoContent();
         }
@@ -77,7 +115,14 @@ namespace Nexus.Controllers
             }
 
             _context.Connections.Remove(connection);
-            _context.SaveChanges();
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+
+            }
 
             return NoContent();
         }

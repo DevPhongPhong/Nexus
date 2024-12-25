@@ -43,8 +43,17 @@ namespace Nexus.Controllers
         [HttpPost]
         public IActionResult CreateSupplier([FromBody] Supplier supplier)
         {
+            supplier.CreatedAt = DateTime.Now;
             _context.Suppliers.Add(supplier);
-            _context.SaveChanges();
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException.Message.Contains("email_unique")) return BadRequest("Email is existed");
+                if (ex.InnerException.Message.Contains("phone_number_unique")) return BadRequest("Phonenum is existed");
+            }
             return CreatedAtAction(nameof(GetSupplierById), new { id = supplier.SupplierId }, supplier);
         }
 
@@ -59,11 +68,20 @@ namespace Nexus.Controllers
             }
 
             supplier.SupplierName = updatedSupplier.SupplierName;
-            supplier.ContactName = updatedSupplier.ContactName;
             supplier.PhoneNumber = updatedSupplier.PhoneNumber;
             supplier.Email = updatedSupplier.Email;
             supplier.Address = updatedSupplier.Address;
-            _context.SaveChanges();
+            supplier.UpdatedAt = DateTime.Now;
+
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException.Message.Contains("email_unique")) return BadRequest("Email is existed");
+                if (ex.InnerException.Message.Contains("phone_number_unique")) return BadRequest("Phonenum is existed");
+            }
 
             return NoContent();
         }
@@ -79,7 +97,14 @@ namespace Nexus.Controllers
             }
 
             _context.Suppliers.Remove(supplier);
-            _context.SaveChanges();
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+
+            }
 
             return NoContent();
         }
