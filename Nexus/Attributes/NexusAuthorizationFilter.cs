@@ -61,10 +61,10 @@ public class NexusAuthorizationFilter : IAuthorizationFilter
                 }
             }
 
-            //if (isOk)
+            if (isOk)
                 context.HttpContext.User = principal;
-            //else
-                //context.Result = new ForbidResult("Không có quyền truy cập");
+            else
+                context.Result = new ForbidResult("Không có quyền truy cập");
         }
         catch (Exception)
         {
