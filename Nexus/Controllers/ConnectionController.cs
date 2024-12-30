@@ -30,11 +30,6 @@ public class ConnectionController : BaseController
                 .FirstOrDefault(p => p.PaymentId == connection.PaymentId);
         }
 
-        if (!connections.Any())
-        {
-            return NotFound("No connections found.");
-        }
-
         return Ok(connections);
     }
 

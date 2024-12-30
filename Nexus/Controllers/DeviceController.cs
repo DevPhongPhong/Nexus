@@ -68,9 +68,16 @@ public class DeviceController : BaseController
         {
             return BadRequest("Invalid device data.");
         }
-
+        device.CreatedAt = DateTime.Now;
         _context.Devices.Add(device);
-        _context.SaveChanges();
+        try
+        {
+            _context.SaveChanges();
+        }
+        catch (Exception ex)
+        {
+            if (ex.InnerException.Message.Contains("supplier_id")) return BadRequest("no supplier");
+        }
 
         return CreatedAtAction(nameof(GetDeviceById), new { id = device.DeviceId }, device);
     }
@@ -79,6 +86,7 @@ public class DeviceController : BaseController
     [HttpPut("{id}")]
     public IActionResult UpdateDevice(int id, [FromBody] Device updatedDevice)
     {
+        updatedDevice.UpdatedAt = DateTime.Now;
         if (updatedDevice == null || updatedDevice.DeviceId != id)
         {
             return BadRequest("Device data is invalid or mismatched.");

@@ -28,6 +28,7 @@ namespace Nexus.Models
         [Column("updated_at")]
         public DateTime? UpdatedAt { get; set; }
 
+        [NotMapped]
         public ICollection<Order>? Orders { get; set; }
     }
 
@@ -54,7 +55,7 @@ namespace Nexus.Models
 
         [Column("updated_at")]
         public DateTime? UpdatedAt { get; set; }
-
+        [NotMapped]
         public ICollection<OrderDetail>? OrderDetails { get; set; }
     }
 
@@ -78,8 +79,9 @@ namespace Nexus.Models
 
         [Column("updated_at")]
         public DateTime? UpdatedAt { get; set; }
-
+        [NotMapped] 
         public ICollection<Employee>? Employees { get; set; }
+        [NotMapped] 
         public ICollection<Device>? Devices { get; set; }
     }
 
@@ -106,7 +108,7 @@ namespace Nexus.Models
 
         [Column("updated_at")]
         public DateTime? UpdatedAt { get; set; }
-
+        [NotMapped]
         public ICollection<Device>? Devices { get; set; }
     }
 
@@ -133,9 +135,11 @@ namespace Nexus.Models
 
         [Column("updated_at")]
         public DateTime? UpdatedAt { get; set; }
-
+        [NotMapped]
         public Supplier? Supplier { get; set; }
+        [NotMapped]
         public Store? Store { get; set; }
+        [NotMapped]
         public ICollection<OrderDetail>? OrderDetails { get; set; }
     }
 
@@ -174,8 +178,9 @@ namespace Nexus.Models
 
         [Column("updated_at")]
         public DateTime? UpdatedAt { get; set; }
-
+        [NotMapped]
         public Store? Store { get; set; }
+        [NotMapped]
         public ICollection<Order>? Orders { get; set; }
     }
 
@@ -202,10 +207,13 @@ namespace Nexus.Models
 
         [Column("updated_at")]
         public DateTime? UpdatedAt { get; set; }
-
+        [NotMapped]
         public Customer? Customer { get; set; }
+        [NotMapped]
         public Employee? Employee { get; set; }
+        [NotMapped]
         public ICollection<OrderDetail>? OrderDetails { get; set; }
+        [NotMapped]
         public ICollection<Payment>? Payments { get; set; }
     }
 
@@ -229,8 +237,9 @@ namespace Nexus.Models
 
         [Column("updated_at")]
         public DateTime? UpdatedAt { get; set; }
-
+        [NotMapped]
         public Order? Order { get; set; }
+        [NotMapped]
         public ICollection<Connection>? Connections { get; set; }
     }
 
@@ -248,7 +257,7 @@ namespace Nexus.Models
 
         [Column("created_at")]
         public DateTime? CreatedAt { get; set; }
-
+        [NotMapped]
         public Payment? Payment { get; set; }
     }
 
@@ -278,9 +287,11 @@ namespace Nexus.Models
 
         [Column("device_quantity")]
         public int? DeviceQuantity { get; set; }
-
+        [NotMapped]
         public Order? Order { get; set; }
+        [NotMapped]
         public Package? Package { get; set; }
+        [NotMapped]
         public Device? Device { get; set; }
     }
 }

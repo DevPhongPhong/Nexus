@@ -26,11 +26,6 @@ namespace Nexus.Controllers
         {
             var orders = _context.Orders.ToList();
 
-            if (!orders.Any())
-            {
-                return NotFound("No orders found.");
-            }
-
             return Ok(orders);
         }
 
