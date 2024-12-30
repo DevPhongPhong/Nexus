@@ -38,7 +38,7 @@ public class NexusAuthorizationFilter : IAuthorizationFilter
             }
 
             // Lấy EmployeeType từ claim
-            var user = JsonConvert.DeserializeObject<User>(principal.Claims.FirstOrDefault(c => c.Type == "User").Value);
+            var user = JsonConvert.DeserializeObject<Employee>(principal.Claims.FirstOrDefault(c => c.Type == "Employee").Value);
             if (user == null)
             {
                 context.Result = new UnauthorizedResult();

@@ -9,7 +9,7 @@ namespace Nexus.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [RoleAccess(Role.Accountant)]
+    [RoleAccess(Role.Admin, Role.TechnicalEmployee)]
     public class PaymentController : BaseController
     {
         private readonly NexusDbContext _context;
@@ -24,18 +24,28 @@ namespace Nexus.Controllers
         public IActionResult GetAllPayments()
         {
             var payments = _context.Payments.ToList();
+
+            if (!payments.Any())
+            {
+                return NotFound("No payments found.");
+            }
+
             return Ok(payments);
         }
 
-        // Get payment by ID
+        // Get payment by ID (include connections)
         [HttpGet("{id}")]
         public IActionResult GetPaymentById(int id)
         {
             var payment = _context.Payments.FirstOrDefault(p => p.PaymentId == id);
+
             if (payment == null)
             {
-                return NotFound();
+                return NotFound($"Payment with ID {id} not found.");
             }
+
+            payment.Connections = _context.Connections.Where(c => c.PaymentId == id).ToList();
+
             return Ok(payment);
         }
 
@@ -43,74 +53,85 @@ namespace Nexus.Controllers
         [HttpPost]
         public IActionResult CreatePayment([FromBody] Payment payment)
         {
-            payment.CreatedAt = DateTime.Now;
-            var order = _context.Customers.Find(payment.CustomerId);
-            if (order == null)
-            {
-                return BadRequest("Customer does not exist.");
-            }
-
-            _context.Payments.Add(payment);
             try
             {
+                payment.CreatedAt = DateTime.Now;
+                payment.UpdatedAt = DateTime.Now;
+                _context.Payments.Add(payment);
                 _context.SaveChanges();
+                return CreatedAtAction(nameof(GetPaymentById), new { id = payment.PaymentId }, payment);
             }
             catch (Exception ex)
             {
-
+                return HandleForeignKeyException(ex);
             }
-
-            return CreatedAtAction(nameof(GetPaymentById), new { id = payment.PaymentId }, payment);
         }
 
         // Update payment
         [HttpPut("{id}")]
         public IActionResult UpdatePayment(int id, [FromBody] Payment updatedPayment)
         {
-            updatedPayment.UpdatedAt = DateTime.Now;
-
-            var payment = _context.Payments.Find(id);
-            if (payment == null)
-            {
-                return NotFound();
-            }
-
-            payment.CustomerId = updatedPayment.CustomerId;
-            payment.Amount = updatedPayment.Amount;
-            payment.UpdatedAt = DateTime.Now;
             try
             {
+                var existingPayment = _context.Payments.FirstOrDefault(p => p.PaymentId == id);
+                if (existingPayment == null)
+                {
+                    return NotFound($"Payment with ID {id} not found.");
+                }
+
+                existingPayment.Amount = updatedPayment.Amount;
+                existingPayment.Description = updatedPayment.Description;
+                existingPayment.OrderId = updatedPayment.OrderId;
+                existingPayment.UpdatedAt = DateTime.Now;
+
+                _context.Payments.Update(existingPayment);
                 _context.SaveChanges();
+
+                return NoContent();
             }
             catch (Exception ex)
             {
-
+                return HandleForeignKeyException(ex);
             }
-
-            return NoContent();
         }
 
-        // Delete payment
+        // Delete payment (and its connections)
         [HttpDelete("{id}")]
         public IActionResult DeletePayment(int id)
         {
-            var payment = _context.Payments.Find(id);
-            if (payment == null)
-            {
-                return NotFound();
-            }
-
-            _context.Payments.Remove(payment);
             try
             {
+                var payment = _context.Payments.FirstOrDefault(p => p.PaymentId == id);
+                if (payment == null)
+                {
+                    return NotFound($"Payment with ID {id} not found.");
+                }
+
+                var connections = _context.Connections.Where(c => c.PaymentId == id).ToList();
+                _context.Connections.RemoveRange(connections);
+                _context.Payments.Remove(payment);
                 _context.SaveChanges();
+
+                return NoContent();
             }
             catch (Exception ex)
             {
+                return HandleForeignKeyException(ex);
+            }
+        }
 
+        // Handle foreign key exceptions
+        private IActionResult HandleForeignKeyException(Exception ex)
+        {
+            if (ex.InnerException != null && ex.InnerException.Message.Contains("FOREIGN KEY"))
+            {
+                if (ex.InnerException.Message.Contains("orders"))
+                {
+                    return BadRequest("Order does not exist.");
+                }
             }
 
-            return NoContent();
+            return StatusCode(500, "An error occurred while processing your request.");
         }
     }
 

@@ -47,8 +47,8 @@ namespace Nexus.Controllers
             }
             catch (Exception ex)
             {
-                if (ex.InnerException.Message.Contains("email")) return BadRequest("Email is existed");
-                if (ex.InnerException.Message.Contains("phonenum")) return BadRequest("Phonenum is existed");
+                if (ex.InnerException.Message.Contains("email")) return BadRequest("email is existed");
+                if (ex.InnerException.Message.Contains("phone_number")) return BadRequest("phone_number is existed");
             }
             return CreatedAtAction(nameof(GetCustomerById), new { id = customer.CustomerId }, customer);
         }
@@ -74,8 +74,8 @@ namespace Nexus.Controllers
             }
             catch (Exception ex)
             {
-                if (ex.InnerException.Message.Contains("email")) return BadRequest("Email is existed");
-                if (ex.InnerException.Message.Contains("phonenum")) return BadRequest("Phonenum is existed");
+                if (ex.InnerException.Message.Contains("email")) return BadRequest("email is existed");
+                if (ex.InnerException.Message.Contains("phone_number")) return BadRequest("phone_number is existed");
             }
 
             return NoContent();

@@ -12,28 +12,28 @@ namespace Nexus.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [RoleAccess(Role.Admin)]
-    public class UserController : BaseController
+    public class EmployeeController : BaseController
     {
         private readonly NexusDbContext _context;
 
-        public UserController(NexusDbContext context)
+        public EmployeeController(NexusDbContext context)
         {
             _context = context;
         }
 
         // Get all users
         [HttpGet]
-        public IActionResult GetAllUsers()
+        public IActionResult GetAllEmployees()
         {
-            var users = _context.Users.Include(u => u.RoleId).ToList();
+            var users = _context.Employees.Include(u => u.RoleId).ToList();
             return Ok(users);
         }
 
         // Get user by ID
         [HttpGet("{id}")]
-        public IActionResult GetUserById(int id)
+        public IActionResult GetEmployeeById(int id)
         {
-            var user = _context.Users.Find(id);
+            var user = _context.Employees.Find(id);
             if (user == null)
             {
                 return NotFound();
@@ -43,50 +43,50 @@ namespace Nexus.Controllers
 
         // Create a new user
         [HttpPost]
-        public IActionResult CreateUser([FromBody] User user)
+        public IActionResult CreateEmployee([FromBody] Employee user)
         {
             user.CreatedAt = DateTime.Now;
-            if (_context.Users.Any(u => u.Username == user.Username))
+            if (_context.Employees.Any(u => u.Username == user.Username))
             {
                 return BadRequest("Username already exists.");
             }
 
             user.PasswordHash = Common.ToSHA256HashString(user.PasswordHash);
-            _context.Users.Add(user);
+            _context.Employees.Add(user);
             try
             {
-_context.SaveChanges();
-}
-            catch(Exception ex)
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
             {
-               
+
             }
 
-            return CreatedAtAction(nameof(GetUserById), new { id = user.UserId }, user);
+            return CreatedAtAction(nameof(GetEmployeeById), new { id = user.EmployeeId }, user);
         }
 
         // Update user
         [HttpPut("{id}")]
-        public IActionResult UpdateUser(int id, [FromBody] User updatedUser)
+        public IActionResult UpdateEmployee(int id, [FromBody] Employee updatedEmployee)
         {
-            var user = _context.Users.Find(id);
+            var user = _context.Employees.Find(id);
             if (user == null)
             {
                 return NotFound();
             }
 
-            user.FullName = updatedUser.FullName;
-            user.Email = updatedUser.Email;
-            user.PhoneNumber = updatedUser.PhoneNumber;
-            user.RoleId = updatedUser.RoleId;
+            user.FullName = updatedEmployee.FullName;
+            user.Email = updatedEmployee.Email;
+            user.PhoneNumber = updatedEmployee.PhoneNumber;
+            user.RoleId = updatedEmployee.RoleId;
             user.UpdatedAt = DateTime.Now;
             try
             {
-_context.SaveChanges();
-}
-            catch(Exception ex)
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
             {
-               
+
             }
 
             return NoContent();
@@ -94,22 +94,22 @@ _context.SaveChanges();
 
         // Delete user
         [HttpDelete("{id}")]
-        public IActionResult DeleteUser(int id)
+        public IActionResult DeleteEmployee(int id)
         {
-            var user = _context.Users.Find(id);
+            var user = _context.Employees.Find(id);
             if (user == null)
             {
                 return NotFound();
             }
 
-            _context.Users.Remove(user);
+            _context.Employees.Remove(user);
             try
             {
-_context.SaveChanges();
-}
-            catch(Exception ex)
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
             {
-               
+
             }
 
             return NoContent();
@@ -119,10 +119,10 @@ _context.SaveChanges();
         [HttpPost("AssignStore")]
         public IActionResult AssignStoreToEmployee(int userId, int storeId)
         {
-            var user = _context.Users.Find(userId);
+            var user = _context.Employees.Find(userId);
             if (user == null || user.RoleId != Role.StoreEmployee)
             {
-                return BadRequest("User not found or is not an employee.");
+                return BadRequest("Employee not found or is not an employee.");
             }
 
             var employee = _context.Employees.FirstOrDefault(e => e.EmployeeId == userId);
@@ -138,11 +138,11 @@ _context.SaveChanges();
 
             try
             {
-_context.SaveChanges();
-}
-            catch(Exception ex)
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
             {
-               
+
             }
             return Ok(employee);
         }

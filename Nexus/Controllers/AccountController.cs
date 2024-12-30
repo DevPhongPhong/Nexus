@@ -29,7 +29,7 @@ namespace Nexus.Controllers
             loginDTO.Password = Common.ToSHA256HashString(loginDTO.Password);
 
             // Retrieve user from the database
-            var loginResponse = _context.Users.AsNoTracking()
+            var loginResponse = _context.Employees.AsNoTracking()
                 .FirstOrDefault(u => u.Username == loginDTO.Username && u.PasswordHash == loginDTO.Password);
 
             if (loginResponse == null)

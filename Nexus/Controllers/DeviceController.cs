@@ -1,144 +1,122 @@
 ﻿using EIM.Attributes.FilterPipelines.Authorizations;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Nexus.Models;
+using Nexus.Controllers;
 using Nexus.Models.Enums;
-using System;
-using System.Data.Entity;
+using Nexus.Models;
+using Nexus;
 
-namespace Nexus.Controllers
+[ApiController]
+[Route("api/[controller]")]
+[RoleAccess(Role.Admin, Role.TechnicalEmployee)]
+public class DeviceController : BaseController
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    [RoleAccess(Role.Admin, Role.TechnicalEmployee)]
-    public class DeviceController : BaseController
+    private readonly NexusDbContext _context;
+
+    public DeviceController(NexusDbContext context)
     {
-        private readonly NexusDbContext _context;
-
-        public DeviceController(NexusDbContext context)
-        {
-            _context = context;
-        }
-
-        // Get all devices
-        [HttpGet]
-        public IActionResult GetAllDevices()
-        {
-            var devices = _context.Devices.ToList();
-            return Ok(devices);
-        }
-
-        // Get device by ID
-        [HttpGet("{id}")]
-        public IActionResult GetDeviceById(int id)
-        {
-            var device = _context.Devices.FirstOrDefault(d => d.DeviceId == id);
-            if (device == null)
-            {
-                return NotFound();
-            }
-
-            // Truy vấn Supplier mà không include danh sách Devices
-            if (device.SupplierId.HasValue)
-            {
-                device.Supplier = _context.Suppliers
-                                           .Where(x => x.SupplierId == device.SupplierId)
-                                           .Select(s => new Supplier
-                                           {
-                                               SupplierId = s.SupplierId,
-                                               SupplierName = s.SupplierName,
-                                               PhoneNumber = s.PhoneNumber,
-                                               Email = s.Email,
-                                               Address = s.Address,
-                                               CreatedAt = s.CreatedAt,
-                                               UpdatedAt = s.UpdatedAt
-                                           })
-                                           .FirstOrDefault();
-            }
-
-            // Load danh sách ApplyDevices
-            device.ApplyDevices = _context.ApplyDevices
-                                          .Where(x => x.DeviceId == device.DeviceId)
-                                          .Select(x => new ApplyDevice
-                                          {
-                                              ApplyDeviceId = x.ApplyDeviceId,
-                                              ConnectionId = x.ConnectionId,
-                                              DeviceId = x.DeviceId,
-                                              Connection = _context.Connections.FirstOrDefault(y => y.ConnectionId == x.ConnectionId),
-                                              Device = null
-
-                                          })
-                                          .ToList();
-
-            return Ok(device);
-        }
-
-
-        // Create a new device
-        [HttpPost]
-        public IActionResult CreateDevice([FromBody] Device device)
-        {
-            _context.Devices.Add(device);
-            try
-            {
-                _context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-
-            }
-            return CreatedAtAction(nameof(GetDeviceById), new { id = device.DeviceId }, device);
-        }
-
-        // Update device
-        [HttpPut("{id}")]
-        public IActionResult UpdateDevice(int id, [FromBody] Device updatedDevice)
-        {
-            var device = _context.Devices.Find(id);
-            if (device == null)
-            {
-                return NotFound();
-            }
-
-            device.DeviceName = updatedDevice.DeviceName;
-            device.SupplierId = updatedDevice.SupplierId;
-            device.PurchaseDate = updatedDevice.PurchaseDate;
-
-            try
-            {
-                _context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-
-            }
-
-            return NoContent();
-        }
-
-        // Delete device
-        [HttpDelete("{id}")]
-        public IActionResult DeleteDevice(int id)
-        {
-            var device = _context.Devices.Find(id);
-            if (device == null)
-            {
-                return NotFound();
-            }
-
-            _context.Devices.Remove(device);
-            try
-            {
-                _context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-
-            }
-
-            return NoContent();
-        }
+        _context = context;
     }
 
+    // Get all devices
+    [HttpGet]
+    public IActionResult GetAllDevices()
+    {
+        var devices = _context.Devices.ToList();
+
+        // Lấy dữ liệu liên quan thủ công
+        foreach (var device in devices)
+        {
+            device.Supplier = _context.Suppliers
+                .FirstOrDefault(s => s.SupplierId == device.SupplierId);
+            device.Store = _context.Stores
+                .FirstOrDefault(st => st.StoreId == device.StoreId);
+        }
+
+        if (!devices.Any())
+        {
+            return NotFound("No devices found.");
+        }
+
+        return Ok(devices);
+    }
+
+    // Get device by ID
+    [HttpGet("{id}")]
+    public IActionResult GetDeviceById(int id)
+    {
+        var device = _context.Devices.FirstOrDefault(d => d.DeviceId == id);
+
+        if (device == null)
+        {
+            return NotFound($"Device with ID {id} not found.");
+        }
+
+        // Lấy dữ liệu liên quan thủ công
+        device.Supplier = _context.Suppliers
+            .FirstOrDefault(s => s.SupplierId == device.SupplierId);
+        device.Store = _context.Stores
+            .FirstOrDefault(st => st.StoreId == device.StoreId);
+
+        return Ok(device);
+    }
+
+    // Create a new device
+    [HttpPost]
+    public IActionResult CreateDevice([FromBody] Device device)
+    {
+        if (device == null)
+        {
+            return BadRequest("Invalid device data.");
+        }
+
+        _context.Devices.Add(device);
+        _context.SaveChanges();
+
+        return CreatedAtAction(nameof(GetDeviceById), new { id = device.DeviceId }, device);
+    }
+
+    // Update device
+    [HttpPut("{id}")]
+    public IActionResult UpdateDevice(int id, [FromBody] Device updatedDevice)
+    {
+        if (updatedDevice == null || updatedDevice.DeviceId != id)
+        {
+            return BadRequest("Device data is invalid or mismatched.");
+        }
+
+        var device = _context.Devices.Find(id);
+        if (device == null)
+        {
+            return NotFound($"Device with ID {id} not found.");
+        }
+
+        // Update properties
+        device.DeviceName = updatedDevice.DeviceName;
+        device.SupplierId = updatedDevice.SupplierId;
+        device.StoreId = updatedDevice.StoreId;
+        device.Quantity = updatedDevice.Quantity;
+        device.CreatedAt = updatedDevice.CreatedAt;
+        device.UpdatedAt = updatedDevice.UpdatedAt;
+
+        _context.Devices.Update(device);
+        _context.SaveChanges();
+
+        return NoContent();
+    }
+
+    // Delete device
+    [HttpDelete("{id}")]
+    public IActionResult DeleteDevice(int id)
+    {
+        var device = _context.Devices.Find(id);
+        if (device == null)
+        {
+            return NotFound($"Device with ID {id} not found.");
+        }
+
+        _context.Devices.Remove(device);
+        _context.SaveChanges();
+
+        return NoContent();
+    }
 }

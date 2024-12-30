@@ -17,9 +17,8 @@ namespace Nexus
             optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
         }
 
-        public DbSet<User> Users { get; set; }
-        public DbSet<Store> Stores { get; set; }
         public DbSet<Employee> Employees { get; set; }
+        public DbSet<Store> Stores { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<Device> Devices { get; set; }
         public DbSet<Package> Packages { get; set; }
@@ -28,6 +27,5 @@ namespace Nexus
         public DbSet<OrderDetail> OrderDetails { get; set; }
         public DbSet<Payment> Payments { get; set; }
         public DbSet<Connection> Connections { get; set; }
-        public DbSet<ApplyDevice> ApplyDevices { get; set; }
     }
 }
