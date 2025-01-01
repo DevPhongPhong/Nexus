@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Newtonsoft.Json.Linq;
 using Nexus.Models;
 using Nexus.Models.Enums;
 using System;
@@ -23,10 +24,13 @@ namespace Nexus.Controllers
 
         // Get all stores
         [HttpGet]
-        public IActionResult GetAllStores(int page, int size)
+        public IActionResult GetAllStores(int page, int size, string? query)
         {
-            var stores = _context.Stores.Skip((page - 1) * size).Take(size).ToList();
-            return Ok(stores);
+            var count = _context.Stores.AsQueryable().Query(query).Count();
+
+            var stores = _context.Stores.AsQueryable().Query(query).Skip((page - 1) * size).Take(size).ToList();
+            return Ok(new { stores, count });
+
         }
 
         // Get store by ID

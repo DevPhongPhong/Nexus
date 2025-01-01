@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Nexus.Models;
 using Nexus.Models.Enums;
 using System;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Nexus.Controllers
 {
@@ -21,10 +22,13 @@ namespace Nexus.Controllers
 
         // Get all suppliers
         [HttpGet]
-        public IActionResult GetAllSuppliers()
+        public IActionResult GetAllSuppliers(int page, int size, string? query)
         {
-            var suppliers = _context.Suppliers.ToList();
-            return Ok(suppliers);
+            var count = _context.Suppliers.AsQueryable().Query(query).Count();
+
+            var suppliers = _context.Suppliers.AsQueryable().Query(query).Skip((page - 1) * size).Take(size).ToList();
+            return Ok(new { suppliers, count });
+
         }
 
         // Get supplier by ID

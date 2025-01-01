@@ -1,9 +1,10 @@
 ﻿using EIM.Attributes.FilterPipelines.Authorizations;
 using Microsoft.AspNetCore.Mvc;
-using Nexus.Controllers;
 using Nexus.Models.Enums;
 using Nexus;
 using Nexus.Models;
+
+namespace Nexus.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -19,9 +20,10 @@ public class ConnectionController : BaseController
 
     // Get all connections
     [HttpGet]
-    public IActionResult GetAllConnections(int page, int size)
+    public IActionResult GetAllConnections(int page, int size, string? query)
     {
-        var connections = _context.Connections.Skip((page - 1) * size).Take(size).ToList();
+        var count = _context.Connections.AsQueryable().Query(query).Count();
+        var connections = _context.Connections.AsQueryable().Query(query).Skip((page - 1) * size).Take(size).ToList();
 
         // Thực hiện thủ công để lấy dữ liệu liên quan
         foreach (var connection in connections)
@@ -30,7 +32,7 @@ public class ConnectionController : BaseController
                 .FirstOrDefault(p => p.PaymentId == connection.PaymentId);
         }
 
-        return Ok(connections);
+        return Ok(new { connections, count });
     }
 
     // Get connection by ID

@@ -6,6 +6,7 @@ using System;
 using System.Data.Entity;
 using EIM.Attributes.FilterPipelines.Authorizations;
 using Microsoft.AspNetCore.Authorization;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Nexus.Controllers
 {
@@ -23,10 +24,14 @@ namespace Nexus.Controllers
 
         // Get all users
         [HttpGet]
-        public IActionResult GetAllEmployees(int page, int size)
+        public IActionResult GetAllEmployees(int page, int size, string? query)
         {
-            var users = _context.Employees.Include(u => u.RoleId).Skip((page - 1) * size).Take(size).ToList();
-            return Ok(users);
+            var count = _context.Employees.AsQueryable().Query(query).Count();
+
+            var users = _context.Employees.AsQueryable().Query(query).Include(u => u.RoleId).Skip((page - 1) * size).Take(size).ToList();
+
+            return Ok(new { users, count });
+
         }
 
         // Get user by ID

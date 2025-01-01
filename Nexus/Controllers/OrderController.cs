@@ -7,6 +7,7 @@ using Nexus.Models.Enums;
 using System;
 using System.Data.Entity;
 using System.Drawing;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Nexus.Controllers
 {
@@ -24,11 +25,14 @@ namespace Nexus.Controllers
 
         // Get all orders
         [HttpGet]
-        public IActionResult GetAllOrders(int page, int size)
+        public IActionResult GetAllOrders(int page, int size, string? query)
         {
-            var orders = _context.Orders.Skip((page - 1) * size).Take(size).ToList();
+            var count = _context.Orders.AsQueryable().Query(query).Count();
 
-            return Ok(orders);
+            var orders = _context.Orders.AsQueryable().Query(query).Skip((page - 1) * size).Take(size).ToList();
+
+            return Ok(new { orders, count });
+
         }
 
         // Get order by ID (include order details)

@@ -6,6 +6,7 @@ using Nexus.Models;
 using Nexus.Models.Enums;
 using System;
 using System.Drawing;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Nexus.Controllers
 {
@@ -23,16 +24,19 @@ namespace Nexus.Controllers
 
         // Get all payments
         [HttpGet]
-        public IActionResult GetAllPayments(int page, int size)
+        public IActionResult GetAllPayments(int page, int size, string? query)
         {
-            var payments = _context.Payments.Skip((page - 1) * size).Take(size).ToList();
+            var count = _context.Payments.AsQueryable().Query(query).Count();
+
+            var payments = _context.Payments.AsQueryable().Query(query).Skip((page - 1) * size).Take(size).ToList();
 
             if (!payments.Any())
             {
                 return NotFound("No payments found.");
             }
 
-            return Ok(payments);
+            return Ok(new { payments, count });
+
         }
 
         // Get payment by ID (include connections)

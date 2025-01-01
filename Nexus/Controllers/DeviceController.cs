@@ -1,9 +1,11 @@
 ﻿using EIM.Attributes.FilterPipelines.Authorizations;
 using Microsoft.AspNetCore.Mvc;
-using Nexus.Controllers;
 using Nexus.Models.Enums;
 using Nexus.Models;
 using Nexus;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+
+namespace Nexus.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -19,9 +21,10 @@ public class DeviceController : BaseController
 
     // Get all devices
     [HttpGet]
-    public IActionResult GetAllDevices(int page, int size)
+    public IActionResult GetAllDevices(int page, int size, string? query)
     {
-        var devices = _context.Devices.Skip((page - 1) * size).Take(size).ToList();
+        var count = _context.Devices.AsQueryable().Query(query).Count();
+        var devices = _context.Devices.AsQueryable().Query(query).Skip((page - 1) * size).Take(size).ToList();
 
         // Lấy dữ liệu liên quan thủ công
         foreach (var device in devices)
@@ -31,13 +34,7 @@ public class DeviceController : BaseController
             device.Store = _context.Stores
                 .FirstOrDefault(st => st.StoreId == device.StoreId);
         }
-
-        if (!devices.Any())
-        {
-            return NotFound("No devices found.");
-        }
-
-        return Ok(devices);
+        return Ok(new { devices, count });
     }
 
     // Get device by ID

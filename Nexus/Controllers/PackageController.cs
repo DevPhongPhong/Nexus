@@ -6,6 +6,7 @@ using Nexus.Models;
 using Nexus.Models.Enums;
 using System;
 using System.Drawing;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Nexus.Controllers
 {
@@ -23,10 +24,13 @@ namespace Nexus.Controllers
 
         // Get all packages
         [HttpGet]
-        public IActionResult GetAllPackages(int page, int size)
+        public IActionResult GetAllPackages(int page, int size, string? query)
         {
-            var packages = _context.Packages.Skip((page - 1) * size).Take(size).ToList();
-            return Ok(packages);
+            var count = _context.Packages.AsQueryable().Query(query).Count();
+
+            var packages = _context.Packages.AsQueryable().Query(query).Skip((page - 1) * size).Take(size).ToList();
+            return Ok(new { packages, count });
+
         }
 
         // Get package by ID
