@@ -19,9 +19,9 @@ public class ConnectionController : BaseController
 
     // Get all connections
     [HttpGet]
-    public IActionResult GetAllConnections()
+    public IActionResult GetAllConnections(int page, int size)
     {
-        var connections = _context.Connections.ToList();
+        var connections = _context.Connections.Skip((page - 1) * size).Take(size).ToList();
 
         // Thực hiện thủ công để lấy dữ liệu liên quan
         foreach (var connection in connections)

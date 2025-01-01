@@ -19,9 +19,9 @@ public class DeviceController : BaseController
 
     // Get all devices
     [HttpGet]
-    public IActionResult GetAllDevices()
+    public IActionResult GetAllDevices(int page, int size)
     {
-        var devices = _context.Devices.ToList();
+        var devices = _context.Devices.Skip((page - 1) * size).Take(size).ToList();
 
         // Lấy dữ liệu liên quan thủ công
         foreach (var device in devices)

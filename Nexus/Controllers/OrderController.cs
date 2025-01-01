@@ -1,10 +1,12 @@
 ﻿using EIM.Attributes.FilterPipelines.Authorizations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Nexus.Models;
 using Nexus.Models.Enums;
 using System;
 using System.Data.Entity;
+using System.Drawing;
 
 namespace Nexus.Controllers
 {
@@ -22,9 +24,9 @@ namespace Nexus.Controllers
 
         // Get all orders
         [HttpGet]
-        public IActionResult GetAllOrders()
+        public IActionResult GetAllOrders(int page, int size)
         {
-            var orders = _context.Orders.ToList();
+            var orders = _context.Orders.Skip((page - 1) * size).Take(size).ToList();
 
             return Ok(orders);
         }

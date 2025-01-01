@@ -1,12 +1,18 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using EIM.Attributes.FilterPipelines.Authorizations;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Nexus.Models;
+using Nexus.Models.Enums;
 using System;
+using System.Drawing;
 
 namespace Nexus.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [RoleAccess(Role.StoreEmployee)]
+
     public class CustomerController : BaseController
     {
         private readonly NexusDbContext _context;
@@ -18,9 +24,9 @@ namespace Nexus.Controllers
 
         // Get all customers
         [HttpGet]
-        public IActionResult GetAllCustomers()
+        public IActionResult GetAllCustomers(int page, int size)
         {
-            var customers = _context.Customers.ToList();
+            var customers = _context.Customers.Skip((page - 1) * size).Take(size).ToList();
             return Ok(customers);
         }
 

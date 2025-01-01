@@ -1,9 +1,11 @@
 ﻿using EIM.Attributes.FilterPipelines.Authorizations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Nexus.Models;
 using Nexus.Models.Enums;
 using System;
+using System.Drawing;
 
 namespace Nexus.Controllers
 {
@@ -21,9 +23,9 @@ namespace Nexus.Controllers
 
         // Get all payments
         [HttpGet]
-        public IActionResult GetAllPayments()
+        public IActionResult GetAllPayments(int page, int size)
         {
-            var payments = _context.Payments.ToList();
+            var payments = _context.Payments.Skip((page - 1) * size).Take(size).ToList();
 
             if (!payments.Any())
             {

@@ -23,9 +23,9 @@ namespace Nexus.Controllers
 
         // Get all users
         [HttpGet]
-        public IActionResult GetAllEmployees()
+        public IActionResult GetAllEmployees(int page, int size)
         {
-            var users = _context.Employees.Include(u => u.RoleId).ToList();
+            var users = _context.Employees.Include(u => u.RoleId).Skip((page - 1) * size).Take(size).ToList();
             return Ok(users);
         }
 

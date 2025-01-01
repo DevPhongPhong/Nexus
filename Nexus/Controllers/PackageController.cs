@@ -1,9 +1,11 @@
 ﻿using EIM.Attributes.FilterPipelines.Authorizations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Nexus.Models;
 using Nexus.Models.Enums;
 using System;
+using System.Drawing;
 
 namespace Nexus.Controllers
 {
@@ -21,9 +23,9 @@ namespace Nexus.Controllers
 
         // Get all packages
         [HttpGet]
-        public IActionResult GetAllPackages()
+        public IActionResult GetAllPackages(int page, int size)
         {
-            var packages = _context.Packages.ToList();
+            var packages = _context.Packages.Skip((page - 1) * size).Take(size).ToList();
             return Ok(packages);
         }
 
