@@ -55,19 +55,40 @@ namespace Nexus.Controllers
         [HttpPost]
         public IActionResult CreateOrder([FromBody] Order order)
         {
+            using var transaction = _context.Database.BeginTransaction();
             try
             {
+                // Set timestamps
                 order.CreatedAt = DateTime.Now;
                 order.UpdatedAt = DateTime.Now;
+
+                // Add the main order
                 _context.Orders.Add(order);
                 _context.SaveChanges();
+
+                // Add order details with foreign key
+                if (order.OrderDetails != null && order.OrderDetails.Any())
+                {
+                    foreach (var detail in order.OrderDetails)
+                    {
+                        detail.OrderId = order.OrderId; // Set foreign key
+                        _context.OrderDetails.Add(detail);
+                    }
+                    _context.SaveChanges();
+                }
+
+                // Commit transaction
+                transaction.Commit();
+
                 return CreatedAtAction(nameof(GetOrderById), new { id = order.OrderId }, order);
             }
             catch (Exception ex)
             {
+                transaction.Rollback();
                 return HandleForeignKeyException(ex);
             }
         }
+
 
         // Update order
         [HttpPut("{id}")]
