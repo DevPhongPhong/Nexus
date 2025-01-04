@@ -261,6 +261,7 @@ namespace Nexus.Models
         public Payment? Payment { get; set; }
     }
 
+    [Table("order_details")]
     public class OrderDetail
     {
         [Key]
